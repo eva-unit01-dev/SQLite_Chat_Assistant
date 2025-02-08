@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Chat Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: auto;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        #query-input {
+            width: 80%;
+            padding: 10px;
+        }
+        button {
+            padding: 10px 20px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Chat Assistant</h1>
+    <div id="chat-container"></div>
+    <div>
+        <input type="text" id="query-input" placeholder="Enter your query...">
+        <button onclick="sendQuery()">Send</button>
+    </div>
+    <div>
+        <h3>Example queries:</h3>
+        <ul>
+            <li>Show me all employees in the Sales department.</li>
+            <li>Who is the manager of the Engineering department?</li>
+            <li>List all employees hired after 2021-01-01.</li>
+            <li>What is the total salary expense for the Marketing department?</li>
+        </ul>
+    </div>
+
+    <script>
+        function sendQuery() {
+            const input = document.getElementById('query-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            // Add user message to chat
+            addMessage(query, 'user');
+            input.value = '';
+
+            // Send query to server
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(data.response, 'bot');
+            })
+            .catch(error => {
+                addMessage('Error: ' + error, 'bot');
+            });
+        }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Allow Enter key to send messages
+        document.getElementById('query-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendQuery();
+            }
+        });
+    </script>
+</body>
+</html>
